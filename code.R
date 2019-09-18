@@ -1,3 +1,4 @@
+#Load required libraries
 library(readxl)      #for excel, csv sheets manipulation
 library(sdcMicro)    #sdcMicro package with functions for the SDC process 
 library(tidyverse)   #optional #for data cleaning
@@ -9,13 +10,16 @@ data <- read_excel("data.xlsx", sheet = "Feuil1",
                                  "text", "numeric", "text", "text", 
                                  "text", "text", "text", "numeric", 
                                  "text", "numeric"))
-                   
-selectedKeyVars <- c(
+
+
+#Select key variables                   
+selectedKeyVars <- c('idp_settlement', 
                      'resp_gender',	'resp_age',
-                     'breadwinner'	
-                     
+                     'breadwinner',	
+                     'total_hh',	'person_with_disabilities'
 )
 
+#select weights
 weightVars <- c('weights_general')
 
 #Convert variables into factors
@@ -26,7 +30,7 @@ cols =  c('idp_settlement',	'settlement',
 
 data[,cols] <- lapply(data[,cols], factor)
 
-#Convert the sub file into dataframe
+#Convert the sub file into a dataframe
 subVars <- c(selectedKeyVars, weightVars)
 fileRes<-data[,subVars]
 fileRes <- as.data.frame(fileRes)
@@ -34,10 +38,11 @@ objSDC <- createSdcObj(dat = fileRes,
                        keyVars = selectedKeyVars, weightVar = weightVars
                        )
 
+#print the risk
 print(objSDC, "risk")
+max(objSDC@risk$global[, "risk"])
 
-#Generate an internal report
+#Generate an internal (extensive) report
 report(objSDC, filename = "index",internal = T, verbose = TRUE) 
-#max(objSDC@risk$global[, "risk"])
-#objSDC@risk$individual
+
 
